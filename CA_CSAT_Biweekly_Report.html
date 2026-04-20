@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CA 满意度双周报 · 3.30–4.12</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #F7F6F2;
+    --surface: #FFFFFF;
+    --surface2: #F0EFE9;
+    --border: rgba(0,0,0,0.08);
+    --border-strong: rgba(0,0,0,0.14);
+    --text: #1A1A18;
+    --text-2: #5A5A54;
+    --text-3: #9A9A94;
+    --accent: #1A1A18;
+    --green: #1D7A5A;
+    --green-bg: #E4F5EE;
+    --red: #C23B2A;
+    --red-bg: #FAEAE7;
+    --amber: #9A6000;
+    --amber-bg: #FEF3DC;
+    --blue: #1A5FA8;
+    --blue-bg: #E6F0FB;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .page { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ── Header ── */
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+  .header-left {}
+  .eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 6px; }
+  .report-title { font-size: 26px; font-weight: 600; color: var(--text); line-height: 1.2; }
+  .report-meta { font-size: 13px; color: var(--text-3); margin-top: 6px; }
+  .lang-toggle { display: flex; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; flex-shrink: 0; margin-top: 4px; }
+  .lang-btn { padding: 6px 14px; font-size: 12px; font-weight: 500; font-family: 'DM Sans', sans-serif; background: none; border: none; cursor: pointer; color: var(--text-3); transition: all 0.15s; }
+  .lang-btn.active { background: var(--text); color: #fff; }
+
+  /* ── Section label ── */
+  .sec-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); margin-bottom: 12px; margin-top: 36px; }
+
+  /* ── Metric cards ── */
+  .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  @media(max-width:640px){ .metric-grid { grid-template-columns: repeat(2,1fr); } }
+  .mc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+  .mc-label { font-size: 11px; color: var(--text-3); margin-bottom: 8px; font-weight: 500; }
+  .mc-val { font-size: 24px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+  .mc-delta { font-size: 12px; margin-top: 5px; font-weight: 500; }
+  .mc-note { font-size: 11px; color: var(--text-3); margin-top: 5px; line-height: 1.4; }
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+
+  /* ── Cards ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px 22px; margin-top: 12px; }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 14px; }
+
+  /* ── Chart ── */
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); margin-bottom: 12px; }
+  .li { display: flex; align-items: center; gap: 5px; }
+  .ld { width: 18px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+  .chart-note { font-size: 11px; color: var(--text-3); margin-top: 10px; line-height: 1.5; }
+
+  /* ── Summary ── */
+  .summary-rows { display: flex; flex-direction: column; gap: 10px; }
+  .irow { display: flex; gap: 12px; align-items: flex-start; }
+  .idot { width: 8px; height: 8px; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+  .itext { font-size: 14px; color: var(--text); line-height: 1.65; }
+  .tag { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 6px; margin-left: 6px; display: inline-block; vertical-align: middle; }
+  .t-block { background: var(--red-bg); color: var(--red); }
+  .t-win { background: var(--green-bg); color: var(--green); }
+  .sub-list { margin: 6px 0 0 0; padding: 0; list-style: none; }
+  .sub-list li { font-size: 13px; color: var(--text-2); padding: 3px 0 3px 14px; position: relative; line-height: 1.5; }
+  .sub-list li::before { content: "–"; position: absolute; left: 0; color: var(--text-3); }
+
+  /* ── Progress sections ── */
+  .sec-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+  .b-prod { background: var(--green-bg); color: var(--green); }
+  .b-flow { background: var(--blue-bg); color: var(--blue); }
+  .b-team { background: #EEEDFE; color: #3C3489; }
+  .b-next { background: var(--surface2); color: var(--text-2); }
+  .item-row { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+  .item-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .item-num { font-size: 11px; color: var(--text-3); min-width: 22px; margin-top: 3px; font-family: 'DM Mono',monospace; }
+  .item-body { flex: 1; min-width: 0; }
+  .item-title { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.5; }
+  .item-sub { font-size: 13px; color: var(--text-2); margin-top: 4px; line-height: 1.55; }
+  .item-owner { font-size: 11px; color: var(--text-3); margin-top: 5px; }
+  .status-row { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-3); margin-top: 5px; }
+  .sdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .s-done { background: var(--green); }
+  .s-wip { background: var(--blue); }
+  .s-pending { background: var(--amber); }
+  .s-block { background: var(--red); }
+  .block-pill { display: inline-flex; align-items: center; gap: 4px; background: var(--red-bg); color: var(--red); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 6px; margin-top: 6px; }
+  .needs-pill { display: inline-flex; align-items: center; gap: 4px; background: var(--amber-bg); color: var(--amber); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 6px; margin-top: 6px; margin-left: 6px; }
+  .doc-link { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--blue); text-decoration: none; margin-top: 6px; }
+  .doc-link:hover { text-decoration: underline; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 32px 0 0; }
+  .sc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 14px; font-weight: 600; color: var(--text); }
+  .next-sub { font-size: 13px; color: var(--text-2); }
+  .next-sub ul { margin: 5px 0 0 0; padding: 0; list-style: none; }
+  .next-sub ul li { padding: 2px 0 2px 14px; position: relative; line-height: 1.5; }
+  .next-sub ul li::before { content: "–"; position: absolute; left: 0; color: var(--text-3); }
+
+  /* ── Owner tags ── */
+  .owner-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; align-items: center; }
+  .owner-label { font-size: 11px; color: var(--text-3); margin-right: 2px; }
+  .owner-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 2px 10px; border-radius: 20px; border: 1px solid transparent; }
+  .owner-tag svg { opacity: 0.65; }
+
+  /* ── Footer ── */
+  .footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-3); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <p class="eyebrow" data-zh="客户满意度报告" data-en="Customer Satisfaction Report">客户满意度报告</p>
+      <h1 class="report-title" data-zh="CA 满意度双周报 · 3.30–4.12" data-en="CA CSAT Biweekly Report · Mar 30 – Apr 12">CA 满意度双周报 · 3.30–4.12</h1>
+      <p class="report-meta">
+        <span data-zh="负责人：Jean Jia" data-en="Owner: Jean Jia">负责人：Jean Jia</span>
+        &nbsp;|&nbsp;
+        <span data-zh="数据来源：灯塔满意度报表" data-en="Source: Lighthouse CSAT Report">数据来源：灯塔满意度报表</span>
+        &nbsp;|&nbsp;
+        <span data-zh="发布日期：4月20日" data-en="Published: Apr 20">发布日期：4月20日</span>
+      </p>
+    </div>
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('zh')">中文</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+
+  <!-- Metrics -->
+  <p class="sec-label" data-zh="核心指标（本双周 vs 上双周均值）" data-en="Key Metrics (This Biweek vs Last Biweek)">核心指标（本双周 vs 上双周均值）</p>
+  <div class="metric-grid">
+    <div class="mc">
+      <div class="mc-label" data-zh="整体满意度（双周均值）" data-en="Overall CSAT (Biweekly Avg)">整体满意度（双周均值）</div>
+      <div class="mc-val">87.25%</div>
+      <div class="mc-delta up">↑ vs 81.82%</div>
+      <div class="mc-note" data-zh="本期两周均值，环比 +5.43%" data-en="Avg of this biweek, +5.43% WoW">本期两周均值，环比 +5.43%</div>
+    </div>
+    <div class="mc">
+      <div class="mc-label" data-zh="账户满意度（双周均值）" data-en="Account CSAT (Biweekly Avg)">账户满意度（双周均值）</div>
+      <div class="mc-val">89.76%</div>
+      <div class="mc-delta up">↑ <span data-zh="连续上升" data-en="Consistently rising">连续上升</span></div>
+      <div class="mc-note" data-zh="本期最稳定类别" data-en="Most stable category this period">本期最稳定类别</div>
+    </div>
+    <div class="mc">
+      <div class="mc-label" data-zh="资金满意度（双周均值）" data-en="Funds CSAT (Biweekly Avg)">资金满意度（双周均值）</div>
+      <div class="mc-val">77.21%</div>
+      <div class="mc-delta down">↓ <span data-zh="本期最低" data-en="Lowest this period">本期最低</span></div>
+      <div class="mc-note" data-zh="出入金时效与账户限制问题为主因" data-en="Deposit/withdrawal delays & account restrictions">出入金时效与账户限制问题为主因</div>
+    </div>
+    <div class="mc">
+      <div class="mc-label" data-zh="交易满意度（双周均值）" data-en="Trade CSAT (Biweekly Avg)">交易满意度（双周均值）</div>
+      <div class="mc-val">80.85%</div>
+      <div class="mc-delta down">↓ <span data-zh="波动较大" data-en="High volatility">波动较大</span></div>
+      <div class="mc-note" data-zh="（87.50% + 74.19%）÷ 2" data-en="(87.50% + 74.19%) ÷ 2">（87.50% + 74.19%）÷ 2</div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="card" style="margin-top:12px;">
+    <p class="card-title" data-zh="双周满意度走势（3.16–4.12）" data-en="Biweekly CSAT Trend (Mar 16 – Apr 12)">双周满意度走势（3.16–4.12）</p>
+    <div class="legend">
+      <span class="li"><span class="ld" style="background:#2A6FDB"></span><span data-zh="整体" data-en="Overall">整体</span></span>
+      <span class="li"><span class="ld" style="background:#1D7A5A"></span><span data-zh="账户" data-en="Account">账户</span></span>
+      <span class="li"><span class="ld" style="background:#C23B2A"></span><span data-zh="资金" data-en="Funds">资金</span></span>
+      <span class="li"><span class="ld" style="background:#C27A00"></span><span data-zh="交易" data-en="Trade">交易</span></span>
+      <span class="li"><span class="ld" style="background:#B4B2A9;"></span><span data-zh="整体趋势线" data-en="Overall trend">整体趋势线</span></span>
+    </div>
+    <div style="position:relative;width:100%;height:260px;">
+      <canvas id="tc" role="img" aria-label="CSAT trend chart"></canvas>
+    </div>
+    <p class="chart-note" data-zh="* 上双周（3.16–3.29）整体均值 81.82%，本双周（3.30–4.12）整体均值 87.25%，环比上涨 5.43%。资金类满意度整体偏低，与出入金处理链路复杂、涉及第三方及账户限制相关。" data-en="* Last biweek (Mar 16–29) overall avg: 81.82%. This biweek (Mar 30–Apr 12) overall avg: 87.25%, up 5.43%. Funds CSAT remains lower due to complex deposit/withdrawal chains involving third parties and account restrictions.">* 上双周（3.16–3.29）整体均值 81.82%，本双周（3.30–4.12）整体均值 87.25%，环比上涨 5.43%。资金类满意度整体偏低，与出入金处理链路复杂、涉及第三方及账户限制相关。</p>
+  </div>
+
+  <!-- Summary -->
+  <div class="card">
+    <p class="card-title" data-zh="总结" data-en="Summary">总结</p>
+    <div class="summary-rows">
+      <div class="irow">
+        <div class="idot" style="background:var(--green)"></div>
+        <div class="itext" data-zh="本双周整体满意度均值较上双周明显上涨（81.82% → 87.25%），账户类均值达 89.76%，团队推动成效持续显现。<span class='tag t-win'>亮点</span>" data-en="Overall CSAT avg rose significantly vs last biweek (81.82% → 87.25%). Account CSAT reached 89.76%. Team improvement efforts are showing consistent results. <span class='tag t-win'>Highlight</span>">本双周整体满意度均值较上双周明显上涨（81.82% → 87.25%），账户类均值达 89.76%，团队推动成效持续显现。<span class="tag t-win">亮点</span></div>
+      </div>
+      <div class="irow">
+        <div class="idot" style="background:var(--red)"></div>
+        <div class="itext">
+          <span data-zh="资金类双周均值 77.21%，主要原因：" data-en="Funds biweekly avg 77.21%. Key drivers:">资金类双周均值 77.21%，主要原因：</span>
+          <ul class="sub-list" id="funds-reasons">
+            <li data-zh="第三方入金、绑卡失败、出入金失败导致处理时效较长" data-en="Third-party deposit failures, card binding failures, and deposit/withdrawal errors causing longer processing times">第三方入金、绑卡失败、出入金失败导致处理时效较长</li>
+            <li data-zh="客户发起出入金后频繁催促进度，形成重复进线" data-en="Customers repeatedly following up on deposit/withdrawal progress, generating repeat contacts">客户发起出入金后频繁催促进度，形成重复进线</li>
+            <li data-zh="出金因账户限制失败占比较高，客户不满情绪集中" data-en="High volume of withdrawals failing due to account restrictions, driving concentrated dissatisfaction">出金因账户限制失败占比较高，客户不满情绪集中</li>
+          </ul>
+          <span data-zh="上述问题已列入下步与 Operation 跨团队协作推动范围。" data-en="These issues are now included in the cross-team action plan with Operation.">上述问题已列入下步与 Operation 跨团队协作推动范围。</span>
+          <span class="tag t-block" data-zh="需关注" data-en="Watch">需关注</span>
+        </div>
+      </div>
+      <div class="irow">
+        <div class="idot" style="background:#2A6FDB"></div>
+        <div class="itext" data-zh="整体满意度4周趋势线持续向上，体现团队系统性推动的长期积累效果。" data-en="The 4-week overall trend line continues upward, reflecting the compounding impact of the team's systematic improvement efforts.">整体满意度4周趋势线持续向上，体现团队系统性推动的长期积累效果。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <p class="sec-label" style="margin-top:28px;" data-zh="本期推动进展" data-en="Progress This Period">本期推动进展</p>
+
+  <!-- Product -->
+  <div class="card">
+    <div class="sc-head"><span class="sec-badge b-prod" data-zh="产品优化" data-en="Product">产品优化</span><span data-zh="跨团队协作推动" data-en="Cross-team collaboration">跨团队协作推动</span></div>
+    <div class="item-row">
+      <div class="item-num">01</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="合规后台账户限制标签优化" data-en="Compliance Backend — Account Restriction Label Optimization">合规后台账户限制标签优化</div>
+        <div class="item-sub" data-zh="评估优化合规后台的账户限制标签体系，补充对应处理流程，使客服能快速识别限制类型并采取正确动作，减少处理时效与客户等待。" data-en="Evaluating optimization of account restriction label taxonomy in the compliance backend, with added handling workflows so agents can quickly identify restriction types and take correct actions, reducing processing time and customer wait.">评估优化合规后台的账户限制标签体系，补充对应处理流程，使客服能快速识别限制类型并采取正确动作，减少处理时效与客户等待。</div>
+        <div class="item-owner" data-zh="负责人：Vera" data-en="Owner: Vera">负责人：Vera</div>
+        <div class="status-row"><span class="sdot s-wip"></span><span data-zh="评估中" data-en="Under review">评估中</span></div>
+      </div>
+    </div>
+    <div class="item-row">
+      <div class="item-num">02</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="客服工作台在线招呼语优化" data-en="Agent Workspace — Auto-Greeting Optimization">客服工作台在线招呼语优化</div>
+        <div class="item-sub" data-zh="针对北美客户沟通习惯，评估优化在线自动招呼语措辞，提升首次接触的客户体验与亲和感。" data-en="Assessing and refining the auto-greeting copy for North American customer communication preferences to improve first-contact experience and approachability.">针对北美客户沟通习惯，评估优化在线自动招呼语措辞，提升首次接触的客户体验与亲和感。</div>
+        <div class="item-owner" data-zh="负责人：Elian" data-en="Owner: Elian">负责人：Elian</div>
+        <div class="status-row"><span class="sdot s-pending"></span><span data-zh="待优化阶段，已初步提出需求" data-en="Pending — initial requirements submitted">待优化阶段，已初步提出需求</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flow -->
+  <div class="card">
+    <div class="sc-head"><span class="sec-badge b-flow" data-zh="流程优化" data-en="Process">流程优化</span><span data-zh="跨团队协作推动" data-en="Cross-team collaboration">跨团队协作推动</span></div>
+    <div class="item-row">
+      <div class="item-num">01</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="开放合规后台查询权限" data-en="Compliance Backend Query Access Opened">开放合规后台查询权限</div>
+        <div class="item-sub" data-zh="客服团队获得直接查询账户限制状态的权限，减少跨团队信息传递环节，提升处理时效与客户响应速度。" data-en="CS team now has direct access to query account restriction status, eliminating cross-team relay steps and improving response speed.">客服团队获得直接查询账户限制状态的权限，减少跨团队信息传递环节，提升处理时效与客户响应速度。</div>
+        <div class="item-owner" data-zh="执行人：Jean" data-en="Owner: Jean">执行人：Jean</div>
+        <div class="status-row"><span class="sdot s-done"></span><span data-zh="已落地" data-en="Completed">已落地</span></div>
+      </div>
+    </div>
+    <div class="item-row">
+      <div class="item-num">02</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="Account Restrictions SOP 优化输出" data-en="Account Restrictions SOP — Optimization Output">Account Restrictions SOP 优化输出</div>
+        <div class="item-sub" data-zh="将账户限制场景标准化分类（AML、KYC、资金审核等），为客服明确对应处理动作与话术，建立标签化追踪与数据分析机制；已与 Operation 多次修订，目前缺少合规部门步骤及审核。" data-en="Standardized classification of account restriction scenarios (AML, KYC, fund review, etc.), with defined agent actions and scripts. Tagging and data tracking mechanisms established. Revised multiple times with Operation — currently pending compliance team steps and sign-off.">将账户限制场景标准化分类（AML、KYC、资金审核等），为客服明确对应处理动作与话术，建立标签化追踪与数据分析机制；已与 Operation 多次修订，目前缺少合规部门步骤及审核。</div>
+        <div class="item-owner" data-zh="执行人：Jean" data-en="Owner: Jean">执行人：Jean</div>
+        <div class="status-row"><span class="sdot s-block"></span><span data-zh="基本完成，待合规补充审核" data-en="Mostly complete — awaiting compliance review">基本完成，待合规补充审核</span></div>
+        <a class="doc-link" href="https://futu.feishu.cn/wiki/TEfzw2ekAii2avkTpC3cgBTfnOg?from=from_copylink" target="_blank">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 6h4M6 4v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <span data-zh="查看文档" data-en="View document">查看文档</span>
+        </a>
+        <span class="block-pill" data-zh="阻塞中" data-en="Blocked">阻塞中</span>
+        <span class="needs-pill" data-zh="需合规 Leader 支持推进" data-en="Compliance Leader support needed">需合规 Leader 支持推进</span>
+      </div>
+    </div>
+    <div class="item-row">
+      <div class="item-num">03</div>
+      <div class="item-body">
+        <div class="item-title">Guide to Adding / Removing / Editing Restrictions</div>
+        <div class="item-sub" data-zh="规范账户限制管理全流程，明确合规主导、中台执行的协作机制，定义各限制类型及权限控制范围，形成可落地的操作参考文档。" data-en="Standardizes the full account restriction management workflow. Defines compliance-led, middle-office-executed collaboration mechanism, restriction types, and permission scopes into an actionable reference guide.">规范账户限制管理全流程，明确合规主导、中台执行的协作机制，定义各限制类型及权限控制范围，形成可落地的操作参考文档。</div>
+        <div class="item-owner" data-zh="执行人：Andrew" data-en="Owner: Andrew">执行人：Andrew</div>
+        <div class="status-row"><span class="sdot s-wip"></span><span data-zh="已输出完成，待产品评估优化" data-en="Output complete — pending product review">已输出完成，待产品评估优化</span></div>
+        <a class="doc-link" href="https://futu.feishu.cn/wiki/SIcMwXA4biq9qMkTDW8cLk10neb?from=from_copylink" target="_blank">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 6h4M6 4v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <span data-zh="查看文档" data-en="View document">查看文档</span>
+        </a>
+      </div>
+    </div>
+    <div class="item-row">
+      <div class="item-num">—</div>
+      <div class="item-body">
+        <div class="item-title" style="color:var(--text-2);" data-zh="当前卡点" data-en="Current Blocker">当前卡点</div>
+        <div class="item-sub" style="color:var(--text);margin-top:4px;" data-zh="合规团队尚未提供处理预期时效及操作方式（如需客户补充资料的具体要求），导致客服无法给客户明确的时间预期，直接影响满意度。客服侧已拟定话术初稿，等待合规审核，目前无进展。" data-en="Compliance team has not yet provided expected processing timelines or specific action requirements (e.g. what documents customers need to submit), preventing agents from giving customers clear expectations. Agent script draft has been submitted for compliance review — no progress to date.">合规团队尚未提供处理预期时效及操作方式（如需客户补充资料的具体要求），导致客服无法给客户明确的时间预期，直接影响满意度。客服侧已拟定话术初稿，等待合规审核，目前无进展。</div>
+        <span class="block-pill" data-zh="阻塞中 · 待合规响应" data-en="Blocked · Awaiting compliance">阻塞中 · 待合规响应</span>
+        <span class="needs-pill" data-zh="需合规 Leader 支持推进" data-en="Compliance Leader support needed">需合规 Leader 支持推进</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team -->
+  <div class="card">
+    <div class="sc-head"><span class="sec-badge b-team" data-zh="团队能力" data-en="Team Capability">团队能力</span><span data-zh="客服内部 SOP 梳理 & 培训" data-en="Internal SOP & Training">客服内部 SOP 梳理 & 培训</span></div>
+    <div class="item-row">
+      <div class="item-num">01</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="不满意工单 T+1 复盘机制" data-en="Dissatisfied Ticket T+1 Review Mechanism">不满意工单 T+1 复盘机制</div>
+        <div class="item-sub" data-zh="组员须在 T+1 日内完成全部不满意工单自查，储备中级按产品/流程/人员分类，人员类工单在当周全组共同复盘学习，形成持续改善闭环。" data-en="Agents must complete self-review of all dissatisfied tickets within T+1 day. Senior reviewers categorize by product/process/personnel. Personnel-type tickets are reviewed collectively each week, creating a continuous improvement loop.">组员须在 T+1 日内完成全部不满意工单自查，储备中级按产品/流程/人员分类，人员类工单在当周全组共同复盘学习，形成持续改善闭环。</div>
+        <div class="item-owner" data-zh="负责人：Jean" data-en="Owner: Jean">负责人：Jean</div>
+      </div>
+    </div>
+    <div class="item-row">
+      <div class="item-num">02</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="客服安抚能力培训" data-en="Customer De-escalation Skills Training">客服安抚能力培训</div>
+        <div class="item-sub" data-zh="以「认同 → 同理心 → 解决方案」为核心公式，结合深度提问、有效致歉及热点问题应对技巧，训练客服在面对投诉时优先稳定情绪、再推进解决，提升满意度转化率。" data-en="Core formula: Acknowledge → Empathize → Solve. Combined with deep questioning, effective apology techniques, and handling of common hot-button issues. Trains agents to stabilize customer emotions before pushing toward resolution, improving CSAT conversion.">以「认同 → 同理心 → 解决方案」为核心公式，结合深度提问、有效致歉及热点问题应对技巧，训练客服在面对投诉时优先稳定情绪、再推进解决，提升满意度转化率。</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <a class="doc-link" href="https://futu.feishu.cn/docx/B8r1dJHltoeVvDxQ0WNcx1V2n2b?from=from_copylink" target="_blank">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 6h6M3 4h6M3 8h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+            <span data-zh="培训文档" data-en="Training document">培训文档</span>
+          </a>
+          <a class="doc-link" href="https://futu.feishu.cn/minutes/obcnv1vp4ss577p6m2cv2y6s?from=from_copylink" target="_blank">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 4.2l3.5 1.8-3.5 1.8V4.2z" fill="currentColor"/></svg>
+            <span data-zh="培训录屏" data-en="Training recording">培训录屏</span>
+          </a>
+        </div>
+        <div class="item-owner" data-zh="执行人：Vicky" data-en="Owner: Vicky">执行人：Vicky</div>
+      </div>
+    </div>
+    <div class="item-row">
+      <div class="item-num">03</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="电话模拟呼入测评" data-en="Simulated Inbound Call Assessment">电话模拟呼入测评</div>
+        <div class="item-sub" data-zh="模拟客户真实来电场景，考核客服语言表达能力、业务熟练度与应急处理能力，发现短板并定向改善。" data-en="Simulates real customer call scenarios to assess agent language skills, product knowledge, and incident handling. Identifies gaps for targeted improvement.">模拟客户真实来电场景，考核客服语言表达能力、业务熟练度与应急处理能力，发现短板并定向改善。</div>
+        <div class="item-owner" data-zh="负责人：Michelle" data-en="Owner: Michelle">负责人：Michelle</div>
+      </div>
+    </div>
+    <div class="item-row">
+      <div class="item-num">04</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="在线主动邀评机制上线" data-en="Proactive Post-Chat CSAT Invitation Launched">在线主动邀评机制上线</div>
+        <div class="item-sub" data-zh="要求客服在完成咨询并确认问题解决后主动邀请客户参评，提升有效评价覆盖率，使满意度数据更具代表性。" data-en="Agents are now required to proactively invite customers to rate their experience after resolving inquiries, increasing rating coverage and making CSAT data more representative.">要求客服在完成咨询并确认问题解决后主动邀请客户参评，提升有效评价覆盖率，使满意度数据更具代表性。</div>
+        <div class="item-owner" data-zh="负责人：Jean" data-en="Owner: Jean">负责人：Jean</div>
+      </div>
+    </div>
+    <div class="item-row">
+      <div class="item-num">05</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="转接/反馈协作流程 SOP 输出" data-en="Transfer / Escalation Workflow SOP Output">转接/反馈协作流程 SOP 输出</div>
+        <div class="item-sub" data-zh="明确需转接处理的各业务场景及对应负责团队，消除转接判断的模糊地带，减少重复转接与处理延误。" data-en="Defines which scenarios require transfer and to which teams, eliminating ambiguity in transfer decisions and reducing repeat transfers and delays.">明确需转接处理的各业务场景及对应负责团队，消除转接判断的模糊地带，减少重复转接与处理延误。</div>
+        <a class="doc-link" href="https://futu.feishu.cn/wiki/MwL6wxcVriXfzykS1lgcFNi2nQh?from=from_copylink" target="_blank">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 6h4M6 4v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <span data-zh="查看文档" data-en="View document">查看文档</span>
+        </a>
+        <div class="item-owner" data-zh="负责人：Jean" data-en="Owner: Jean">负责人：Jean</div>
+      </div>
+    </div>
+    <div class="item-row">
+      <div class="item-num">06</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="开户流程及问题梳理 SOP 输出（账户类）" data-en="Account Opening Process SOP Output (Account Category)">开户流程及问题梳理 SOP 输出（账户类）</div>
+        <div class="item-sub" data-zh="整理开户审核全流程，明确各节点负责团队、常见卡点的处理方式与标准话术，完成组内培训同步，提升账户类问题一次解决率。" data-en="Documents the full account opening review workflow, identifying responsible teams at each stage, handling methods for common blockers, and standard scripts. Team training completed to improve first-contact resolution for account-related issues.">整理开户审核全流程，明确各节点负责团队、常见卡点的处理方式与标准话术，完成组内培训同步，提升账户类问题一次解决率。</div>
+        <a class="doc-link" href="https://futu.feishu.cn/wiki/B8y0wSEVAi0nyukrdSscyGwVnYe?from=from_copylink" target="_blank">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 6h4M6 4v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          <span data-zh="查看文档" data-en="View document">查看文档</span>
+        </a>
+        <div class="item-owner" data-zh="负责人：Jean" data-en="Owner: Jean">负责人：Jean</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Next steps -->
+  <div class="card">
+    <div class="sc-head"><span class="sec-badge b-next" data-zh="下步计划" data-en="Next Steps">下步计划</span></div>
+    <div class="item-row">
+      <div class="item-num">01</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="持续推动合规沟通，解决处理预期时效卡点" data-en="Continue pushing compliance alignment to resolve SLA clarity blocker">持续推动合规沟通，解决处理预期时效卡点</div>
+        <div class="item-sub" data-zh="明确合规侧响应 SLA 及话术审核节点，力争尽快消除客服无法给客户明确预期的问题。" data-en="Establish clear compliance SLA and script review checkpoints to eliminate the issue of agents being unable to set expectations with customers.">明确合规侧响应 SLA 及话术审核节点，力争尽快消除客服无法给客户明确预期的问题。</div>
+        <div class="item-owner" data-zh="负责人：Jean & Michelle & 合规" data-en="Owner: Jean & Michelle & Compliance">负责人：Jean & Michelle & 合规</div>
+      </div>
+    </div>
+    <div class="item-row">
+      <div class="item-num">02</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="与 Operation 协作，推动资金类满意度改善" data-en="Partner with Operation to improve Funds CSAT">与 Operation 协作，推动资金类满意度改善</div>
+        <div class="next-sub">
+          <span data-zh="针对资金类投诉集中问题，从以下方向联合 Operation 推进：" data-en="Targeting concentrated Funds complaints, working with Operation across these areas:">针对资金类投诉集中问题，从以下方向联合 Operation 推进：</span>
+          <ul>
+            <li data-zh="梳理第三方入金、出入金失败、绑卡失败的处理链路，识别可缩短时效的节点，推动优化" data-en="Map third-party deposit, deposit/withdrawal failure, and card binding failure workflows to identify speed-up opportunities">梳理第三方入金、出入金失败、绑卡失败的处理链路，识别可缩短时效的节点，推动优化</li>
+            <li data-zh="针对频繁催促场景，建立进度主动告知机制，减少客户重复进线" data-en="Build a proactive progress notification mechanism for repeat follow-up cases to reduce repeat contacts">针对频繁催促场景，建立进度主动告知机制，减少客户重复进线</li>
+            <li data-zh="对出金因账户限制失败的场景，明确客服侧告知话术与处理流程，降低客户不满" data-en="Clarify agent scripts and handling procedures for withdrawal failures due to account restrictions to reduce dissatisfaction">对出金因账户限制失败的场景，明确客服侧告知话术与处理流程，降低客户不满</li>
+          </ul>
+        </div>
+        <div class="item-owner" data-zh="负责人：Ivy & Andrew" data-en="Owner: Ivy & Andrew">负责人：Ivy & Andrew</div>
+      </div>
+    </div>
+    <div class="item-row">
+      <div class="item-num">03</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="账户限制数据 AI 日报上线" data-en="Account Restriction AI Daily Report Launch">账户限制数据 AI 日报上线</div>
+        <div class="item-sub" data-zh="由 Michelle 从合规后台提取数据，结合 Claude 生成日报，实现账户限制数据自动化追踪与可视化，提升运营透明度。" data-en="Michelle will extract data from the compliance backend and use Claude to generate daily reports, enabling automated tracking and visualization of account restriction data to improve operational visibility.">由 Michelle 从合规后台提取数据，结合 Claude 生成日报，实现账户限制数据自动化追踪与可视化，提升运营透明度。</div>
+        <div class="item-owner" data-zh="负责人：Michelle" data-en="Owner: Michelle">负责人：Michelle</div>
+      </div>
+    </div>
+    <div class="item-row">
+      <div class="item-num">04</div>
+      <div class="item-body">
+        <div class="item-title" data-zh="深化北美客户语言习惯研究，持续优化在线表达" data-en="Deepen North American customer language research and continue refining online communication">深化北美客户语言习惯研究，持续优化在线表达</div>
+        <div class="item-sub" data-zh="结合客户反馈迭代优化在线沟通语言，进一步提升北美客户服务体验。" data-en="Iteratively refine online communication language based on customer feedback to further improve the North American customer experience.">结合客户反馈迭代优化在线沟通语言，进一步提升北美客户服务体验。</div>
+        <div class="item-owner" data-zh="负责人：Jean & Michelle & Elian" data-en="Owner: Jean & Michelle & Elian">负责人：Jean & Michelle & Elian</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span data-zh="CA 客服团队 · 灯塔满意度报表 · 3.30–4.12" data-en="CA Customer Service Team · Lighthouse CSAT Report · Mar 30–Apr 12">CA 客服团队 · 灯塔满意度报表 · 3.30–4.12</span>
+  </div>
+
+</div>
+
+<script>
+// Chart
+const labels = ['3.16-22','3.23-29','3.30-4.05','4.06-12'];
+const overall = [79.72,83.91,88.51,85.99];
+const xs = [0,1,2,3], n = 4;
+const sumX=6, sumY=overall.reduce((a,b)=>a+b,0);
+const sumXY=xs.reduce((a,i)=>a+i*overall[i],0), sumX2=14;
+const slope=(n*sumXY-sumX*sumY)/(n*sumX2-sumX*sumX);
+const intercept=(sumY-slope*sumX)/n;
+const trend=xs.map(i=>parseFloat((intercept+slope*i).toFixed(2)));
+
+new Chart(document.getElementById('tc'),{
+  type:'line',
+  data:{
+    labels,
+    datasets:[
+      {label:'Overall',data:overall,borderColor:'#2A6FDB',backgroundColor:'transparent',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#2A6FDB',tension:0.3},
+      {label:'Account',data:[86.36,92.31,88.89,90.63],borderColor:'#1D7A5A',backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointBackgroundColor:'#1D7A5A',borderDash:[5,3],tension:0.3},
+      {label:'Funds',data:[80.65,90.48,85.19,69.23],borderColor:'#C23B2A',backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointBackgroundColor:'#C23B2A',borderDash:[3,2],tension:0.3},
+      {label:'Trade',data:[69.57,72.00,87.50,74.19],borderColor:'#C27A00',backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointBackgroundColor:'#C27A00',borderDash:[7,3],tension:0.3},
+      {label:'Trend',data:trend,borderColor:'#B4B2A9',backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,borderDash:[5,5],tension:0}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.parsed.y.toFixed(2)+'%'}}},
+    scales:{
+      y:{min:60,max:100,ticks:{callback:v=>v+'%',font:{size:11},color:'#9A9A94'},grid:{color:'rgba(0,0,0,0.05)'},border:{display:false}},
+      x:{ticks:{font:{size:11},color:'#9A9A94'},grid:{display:false},border:{display:false}}
+    }
+  }
+});
+
+// Lang toggle
+function renderOwnerTags() {
+  const personIcon = `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="3.5" r="2" stroke="currentColor" stroke-width="1.1"/><path d="M1.5 9c0-1.933 1.567-3.5 3.5-3.5S8.5 7.067 8.5 9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>`;
+
+  // Fixed color map per person — bg / border / text
+  const palette = [
+    { bg:'#E6F0FB', border:'#A8C8F5', color:'#1A5FA8' },
+    { bg:'#E4F5EE', border:'#8ADAB8', color:'#0F5C3A' },
+    { bg:'#EEEDFE', border:'#B8B3F5', color:'#3C3289' },
+    { bg:'#FEF3DC', border:'#F5CC78', color:'#7A4D00' },
+    { bg:'#FAEAE7', border:'#F0A898', color:'#8C2A1A' },
+    { bg:'#F0EFF9', border:'#C5C2E8', color:'#4A4580' },
+    { bg:'#E4F5F0', border:'#85D5B8', color:'#0C5940' },
+    { bg:'#FDF0E6', border:'#F0C090', color:'#7A4010' },
+  ];
+  const personColors = {};
+  let colorIdx = 0;
+
+  function getColor(name) {
+    const key = name.toLowerCase().trim();
+    if (!personColors[key]) {
+      personColors[key] = palette[colorIdx % palette.length];
+      colorIdx++;
+    }
+    return personColors[key];
+  }
+
+  // First pass: assign colors consistently across entire page
+  document.querySelectorAll('.item-owner').forEach(el => {
+    const lang = document.documentElement.lang === 'en' ? 'en' : 'zh';
+    const raw = el.getAttribute('data-' + lang) || el.dataset.zh || '';
+    const colon = raw.indexOf('：') !== -1 ? raw.indexOf('：') : raw.indexOf(':');
+    const namesRaw = colon !== -1 ? raw.substring(colon + 1).trim() : raw.trim();
+    namesRaw.split(/&|＆/).map(s => s.trim()).filter(Boolean).forEach(n => getColor(n));
+  });
+
+  // Second pass: render
+  document.querySelectorAll('.item-owner').forEach(el => {
+    const lang = document.documentElement.lang === 'en' ? 'en' : 'zh';
+    const raw = el.getAttribute('data-' + lang) || el.dataset.zh || '';
+    const colon = raw.indexOf('：') !== -1 ? raw.indexOf('：') : raw.indexOf(':');
+    const labelText = colon !== -1 ? raw.substring(0, colon + 1) : '';
+    const namesRaw = colon !== -1 ? raw.substring(colon + 1).trim() : raw.trim();
+    const names = namesRaw.split(/&|＆/).map(s => s.trim()).filter(Boolean);
+    const tagsHtml = names.map(n => {
+      const c = getColor(n);
+      return `<span class="owner-tag" style="background:${c.bg};border-color:${c.border};color:${c.color}">${personIcon}${n}</span>`;
+    }).join('');
+    el.innerHTML = `<div class="owner-row"><span class="owner-label">${labelText}</span>${tagsHtml}</div>`;
+  });
+}
+
+function setLang(lang) {
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
+  document.documentElement.lang = lang === 'zh' ? 'zh' : 'en';
+  document.querySelectorAll('[data-zh]').forEach(el => {
+    if (!el.classList.contains('item-owner')) {
+      el.innerHTML = el.getAttribute('data-' + lang);
+    }
+  });
+  renderOwnerTags();
+}
+
+renderOwnerTags();
+</script>
+</body>
+</html>
